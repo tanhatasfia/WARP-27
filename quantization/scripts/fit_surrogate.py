@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse, json
 import numpy as np
-from warp_quant.surrogate import fit_energy_surrogate
+from warp_kernel.surrogate import fit_energy_surrogate
 
 p = argparse.ArgumentParser()
 p.add_argument("--npz", required=True, help="NPZ with bitmaps[K,L], energies[K]")

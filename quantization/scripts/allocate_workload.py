@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse,csv,json
 from decimal import Decimal
-from warp_quant.workload_surrogate import WorkloadEnergyModel
-from warp_quant.pulse import solve_pulse
+from warp_kernel.workload_surrogate import WorkloadEnergyModel
+from warp_kernel.pulse import solve_pulse
 p=argparse.ArgumentParser();p.add_argument('--surrogate',required=True);p.add_argument('--trps-csv',required=True)
 p.add_argument('--prompt-len',type=int,required=True);p.add_argument('--new-tokens',type=int,required=True)
 p.add_argument('--avg-bit-budget',type=Decimal,default=Decimal('3.1'));p.add_argument('--trps-tolerance',type=Decimal,required=True);p.add_argument('--out',default='allocation_workload.json')

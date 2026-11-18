@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse,csv,json
 import numpy as np
-from warp_quant.workload_surrogate import fit_model, WorkloadEnergyModel
+from warp_kernel.workload_surrogate import fit_model, WorkloadEnergyModel
 
 def load(path):
     rows=list(csv.DictReader(open(path)))

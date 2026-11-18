@@ -4,9 +4,9 @@ import argparse, csv, json, random
 import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from warp_quant.trps import trps_token_stats, TRPSAccumulator
-from warp_quant.reconstruction import ReconstructionCalibration, add_calibration_arguments
-from warp_quant.model_utils import get_transformer_blocks
+from warp_kernel.trps import trps_token_stats, TRPSAccumulator
+from warp_kernel.reconstruction import ReconstructionCalibration, add_calibration_arguments
+from warp_kernel.model_utils import get_transformer_blocks
 
 p = argparse.ArgumentParser()
 p.add_argument("--model", required=True)

@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from warp_quant.energy import NVMLPowerSampler,JetsonSysfsPowerSampler,integrate_energy
+from warp_kernel.energy import NVMLPowerSampler,JetsonSysfsPowerSampler,integrate_energy
 from warp_kernels.integration import install_bitmap,load_tuning
 
 def main():

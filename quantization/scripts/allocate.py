@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse, json, csv
-from warp_quant.surrogate import EnergySurrogate
-from warp_quant.mckp import solve_mckp_dp
+from warp_kernel.surrogate import EnergySurrogate
+from warp_kernel.mckp import solve_mckp_dp
 
 p = argparse.ArgumentParser()
 p.add_argument("--trps-csv", required=True, help="columns: block,bits,trps")

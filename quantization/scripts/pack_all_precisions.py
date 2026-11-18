@@ -6,8 +6,8 @@ from pathlib import Path
 import torch
 from transformers import AutoModelForCausalLM
 
-from warp_quant.model_utils import get_transformer_blocks, pack_block
-from warp_quant.reconstruction import ReconstructionCalibration, add_calibration_arguments
+from warp_kernel.model_utils import get_transformer_blocks, pack_block
+from warp_kernel.reconstruction import ReconstructionCalibration, add_calibration_arguments
 
 
 def main():
