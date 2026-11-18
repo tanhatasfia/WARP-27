@@ -53,7 +53,7 @@ def cvar(values: torch.Tensor, tau: float = 0.10) -> torch.Tensor:
 
 
 def _clone_args(args: Tuple[Any, ...]) -> Tuple[Any, ...]:
-  
+    # Inputs are only read by decoder blocks; shallow clone container structure.
     return tuple(a for a in args)
 
 
@@ -96,6 +96,7 @@ def trps_token_stats(
     group_size: int = 128,
     eps: float = 1e-8,
     skip_first_tokens: int = 0,
+    reconstruction_designs=None,
 ) -> Dict[Tuple[int, int], Tuple[torch.Tensor, Optional[torch.Tensor]]]:
     
     model.eval()
@@ -124,7 +125,10 @@ def trps_token_stats(
             
                 h_next_fp = _call_block_with_hidden(next_block, n_args, n_kwargs, h_fp)
             for bits in bits_set:
-                with fake_quantized_block(block, bits, group_size):
+                with fake_quantized_block(
+                    block, bits, group_size,
+                    reconstruction=(reconstruction_designs[l] if reconstruction_designs is not None else None),
+                ):
                     h_q = _call_block_with_hidden(block, args, kwargs, h_in)
                 d = tokenwise_residual_normalized_distortion(h_q, h_fp, h_in, eps)
                 p = None
@@ -183,10 +187,14 @@ def calibrate_trps_batch(
     lambda_prop: float = 0.25,
     eps: float = 1e-8,
     skip_first_tokens: int = 0,
+    reconstruction_designs=None,
 ) -> List[TRPSRecord]:
    
     acc = TRPSAccumulator(tau, lambda_tail, lambda_prop)
-    acc.add(trps_token_stats(model, model_inputs, bits_set, group_size, eps, skip_first_tokens))
+    acc.add(trps_token_stats(
+        model, model_inputs, bits_set, group_size, eps, skip_first_tokens,
+        reconstruction_designs=reconstruction_designs,
+    ))
     return acc.finalize()
 
 

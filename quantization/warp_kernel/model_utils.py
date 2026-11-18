@@ -37,17 +37,32 @@ def iter_block_linears(block: nn.Module) -> Iterable[tuple[str, nn.Linear]]:
 
 
 @contextmanager
-def fake_quantized_block(block: nn.Module, bits: int, group_size: int = 128):
-    """Temporarily fake-quantize all Linear weights in a block, then restore."""
+def fake_quantized_block(block: nn.Module, bits: int, group_size: int = 128, *, reconstruction=None):
+    """Temporarily install affine-quantized or reconstructed weights, then restore FP weights.
+
+    `reconstruction` is the projection-name -> design-tensor mapping produced by
+    ReconstructionCalibration.collect(block). Codes are fixed while scales/zeros
+    are refitted using the very same refine_affine() used by pack_block().
+    """
     saved = []
     try:
-        for _, linear in iter_block_linears(block):
-            saved.append((linear, linear.weight.data))
-            qdq = fake_quantize_weight(linear.weight.data, bits, group_size)
+        for name, linear in iter_block_linears(block):
+            original = linear.weight.data
+            if reconstruction is None:
+                qdq = fake_quantize_weight(original, bits, group_size)
+            else:
+                from .reconstruction import refine_affine
+                from .affine import dequantize_weight
+                if name not in reconstruction:
+                    raise KeyError(f"Missing reconstruction design for projection {name!r}")
+                qt = affine_quantize_weight(original, bits, group_size)
+                qt = refine_affine(original, qt, reconstruction[name].to(original.device))
+                qdq = dequantize_weight(qt, dtype=original.dtype)
+            saved.append((linear, original))
             linear.weight.data = qdq
         yield block
     finally:
-        for linear, original in saved:
+        for linear, original in reversed(saved):
             linear.weight.data = original
 
 
