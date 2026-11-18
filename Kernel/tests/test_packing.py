@@ -48,8 +48,8 @@ def test_quantize_dequantize_error_bounded(bits):
 
 def test_external_packer_matches_if_available():
   
-    packing = pytest.importorskip("warp_quant.packing")
-    affine = pytest.importorskip("warp_quant.affine")
+    packing = pytest.importorskip("warp_kernel.packing")
+    affine = pytest.importorskip("warp_kernel.affine")
     torch.manual_seed(0)
     w = torch.randn(64, 512)
     for bits in (2, 3, 4):
