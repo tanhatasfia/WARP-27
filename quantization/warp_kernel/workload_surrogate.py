@@ -3,7 +3,7 @@ import json
 from dataclasses import dataclass
 import numpy as np
 from sklearn.linear_model import Ridge
-from warp_quant.surrogate import EnergySurrogate, one_hot_bitmaps
+from warp_kernel.surrogate import EnergySurrogate, one_hot_bitmaps
 
 def basis(p,g,phase):
     p=np.asarray(p,dtype=float).reshape(-1)/1024.0
