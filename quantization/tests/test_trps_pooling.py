@@ -1,5 +1,5 @@
 import torch
-from warp_quant.trps import TRPSAccumulator, cvar
+from warp_kernel.trps import TRPSAccumulator, cvar
 
 
 def test_cvar_is_pooled_over_all_tokens():

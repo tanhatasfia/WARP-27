@@ -1,6 +1,6 @@
 import numpy as np
-from warp_quant.surrogate import fit_energy_surrogate
-from warp_quant.mckp import solve_mckp_dp
+from warp_kernel.surrogate import fit_energy_surrogate
+from warp_kernel.mckp import solve_mckp_dp
 
 
 def test_surrogate_and_allocator():

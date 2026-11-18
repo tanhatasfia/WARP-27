@@ -1,6 +1,6 @@
 import torch
-from warp_quant.affine import affine_quantize_weight, dequantize_weight
-from warp_quant.packing import pack_codes, unpack_codes
+from warp_kernel.affine import affine_quantize_weight, dequantize_weight
+from warp_kernel.packing import pack_codes, unpack_codes
 
 
 def test_pack_roundtrip():
