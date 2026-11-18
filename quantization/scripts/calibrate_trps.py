@@ -5,6 +5,8 @@ import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from warp_quant.trps import trps_token_stats, TRPSAccumulator
+from warp_quant.reconstruction import ReconstructionCalibration, add_calibration_arguments
+from warp_quant.model_utils import get_transformer_blocks
 
 p = argparse.ArgumentParser()
 p.add_argument("--model", required=True)
@@ -28,6 +30,7 @@ p.add_argument("--skip-first-tokens", type=int, default=0,
                     "(e.g. 1 to drop the attention-sink/BOS position)")
 p.add_argument("--device", default="cuda")
 p.add_argument("--out", default="trps.csv")
+add_calibration_arguments(p)
 a = p.parse_args()
 
 random.seed(a.seed)
@@ -35,6 +38,21 @@ torch.manual_seed(a.seed)
 
 tok = AutoTokenizer.from_pretrained(a.model, use_fast=True)
 model = AutoModelForCausalLM.from_pretrained(a.model, torch_dtype=torch.float16).to(a.device).eval()
+
+# Build projection designs from FP16 reference activations BEFORE TRPS evaluation.
+# Exactly the same calibration and affine-refit procedure is used during packing.
+reconstruction_designs = None
+if a.calibration_text is not None:
+    if torch.device(a.calibration_device) != torch.device(a.device):
+        raise ValueError("--calibration-device must match --device for TRPS evaluation")
+    calibration = ReconstructionCalibration(model, a)
+    reconstruction_designs = []
+    for block_index, block in enumerate(get_transformer_blocks(model)):
+        designs = calibration.collect(block)
+        # Store designs on CPU to avoid retaining all of them on GPU.
+        reconstruction_designs.append({name: design.cpu() for name, design in designs.items()})
+        print(f"collected reconstruction designs for block {block_index}")
+
 
 
 ds = load_dataset(a.dataset, a.dataset_config, split=a.split, streaming=True)
@@ -69,8 +87,11 @@ for i, s0 in enumerate(starts, 1):
     if a.prepend_bos:
         ids = torch.cat([torch.tensor([tok.bos_token_id]), ids])
     inputs = {"input_ids": ids.unsqueeze(0).to(a.device), "use_cache": False}
+    # Move only the projection designs needed by this pass onto the execution device.
+    # To avoid making multiple copies, the designs remain on CPU until used.
     acc.add(trps_token_stats(model, inputs, group_size=a.group_size,
-                             skip_first_tokens=a.skip_first_tokens))
+                             skip_first_tokens=a.skip_first_tokens,
+                             reconstruction_designs=reconstruction_designs))
     print(f"sample {i}/{a.samples}")
 
 records = acc.finalize()
