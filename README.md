@@ -1,7 +1,6 @@
 
 
-Official implementation of **WARP: Workload-Aware Precision Allocation with
-GPU Kernel Optimization for Low-Bit LLM Inference**.
+Official implementation of **WARP**.
 
 
 ```text
